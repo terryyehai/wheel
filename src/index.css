@@ -760,3 +760,735 @@ select {
 .pointer-ticking {
   animation: pointer-tick 0.15s ease-out;
 }
+
+/* ── Mode Selector ── */
+.mode-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  animation: fade-in 0.5s ease-out;
+}
+
+.mode-selector-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.mode-card {
+  background: rgba(30, 35, 55, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--mode-color, #6c7bff);
+  opacity: 0.7;
+}
+
+.mode-card:hover {
+  transform: translateY(-4px);
+  background: rgba(40, 45, 65, 0.8);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3),
+    0 0 15px var(--mode-color-glow, rgba(108, 123, 255, 0.2));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mode-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.mode-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.mode-mid-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.mode-arrow {
+  margin-top: auto;
+  padding-top: 12px;
+  color: var(--mode-color);
+  font-weight: bold;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+}
+
+.mode-card:hover .mode-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Back Button */
+.back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-right: 12px;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════
+   Scratch Mode 刮刮樂
+   ═══════════════════════════════════════════ */
+.scratch-start-container {
+  padding: 40px;
+  text-align: center;
+  width: 100%;
+}
+
+.scratch-start-btn {
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.scratch-start-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6);
+}
+
+.scratch-start-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+.scratch-card-container {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 3/2;
+  margin: 20px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+.scratch-result-bg {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.scratch-result-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #333;
+  padding: 20px;
+  text-align: center;
+  word-break: break-all;
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* ═══════════════════════════════════════════
+   Gachapon Mode 扭蛋機
+   ═══════════════════════════════════════════ */
+
+.gachapon-container {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.gachapon-machine {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 2/3;
+  height: auto;
+}
+
+.gachapon-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+.gachapon-knob-container {
+  position: absolute;
+  top: 310px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gachapon-knob {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  border: 4px solid #b2bec3;
+  box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.knob-bar {
+  width: 50px;
+  height: 12px;
+  background: #b2bec3;
+  border-radius: 6px;
+  position: absolute;
+}
+
+.knob-center {
+  width: 20px;
+  height: 20px;
+  background: #dfe6e9;
+  border-radius: 50%;
+  z-index: 2;
+  border: 2px solid #b2bec3;
+}
+
+.gachapon-hint-text {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 扭蛋球動畫 */
+.gachapon-ball {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, var(--ball-color));
+  box-shadow: inset -2px -2px 10px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+  cursor: pointer;
+  overflow: hidden;
+  /* 初始位置在出球口 */
+  left: 50%;
+  transform: translateX(-50%);
+  top: 360px;
+}
+
+.gachapon-ball.dropping {
+  animation: ballDrop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.gachapon-ball.open {
+  animation: ballCenterAndOpen 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.gachapon-ball.opened {
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+.ball-upper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: var(--ball-color);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  transform-origin: bottom center;
+  transition: transform 0.4s ease-out;
+}
+
+.ball-lower {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: white;
+  transform-origin: top center;
+  transition: transform 0.4s ease-out;
+}
+
+.ball-center-ring {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateY(-50%);
+}
+
+@keyframes ballDrop {
+  0% {
+    top: 320px;
+    transform: translateX(-50%) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+
+  40% {
+    top: 370px;
+    transform: translateX(-50%) scale(1) rotate(20deg);
+    opacity: 1;
+  }
+
+  60% {
+    top: 350px;
+    transform: translateX(-50%) scale(1) rotate(-10deg);
+  }
+
+  80% {
+    top: 365px;
+    transform: translateX(-50%) scale(1) rotate(5deg);
+  }
+
+  100% {
+    top: 360px;
+    transform: translateX(-50%) scale(1) rotate(0deg);
+  }
+}
+
+/* 點擊後放大並打開 */
+@keyframes ballCenterAndOpen {
+  0% {
+    top: 360px;
+    transform: translateX(-50%) scale(1);
+  }
+
+  100% {
+    top: 200px;
+    transform: translateX(-50%) scale(2.5);
+  }
+}
+
+.gachapon-ball.open .ball-upper {
+  transform: rotateX(-120deg) translateY(-20px);
+  opacity: 0;
+}
+
+.gachapon-ball.open .ball-lower {
+  transform: rotateX(120deg) translateY(20px);
+  opacity: 0;
+}
+
+/* ═══════════════════════════════════════════
+   Card Mode 塔羅抽卡
+   ═══════════════════════════════════════════ */
+
+.card-mode-container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card-start-view {
+  text-align: center;
+}
+
+.card-preview-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  height: 120px;
+}
+
+.card-preview-item {
+  width: 80px;
+  height: 120px;
+  background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.card-start-btn {
+  padding: 12px 32px;
+  border: 1px solid rgba(108, 123, 255, 0.5);
+  background: rgba(108, 123, 255, 0.1);
+  color: var(--accent);
+  border-radius: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-start-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 600px;
+  perspective: 1000px;
+}
+
+.card-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+}
+
+.card-wrapper.dimmed {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.card-wrapper:hover:not(.flipped):not(.dimmed) {
+  transform: translateY(-10px);
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card-wrapper.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card Front (Face Down) Pattern */
+.card-front {
+  background: #1a1a1a;
+  border: 2px solid #444;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, #222 10px, #222 20px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, #222 10px, #222 20px);
+}
+
+.card-pattern {
+  width: 80%;
+  height: 80%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-pattern::after {
+  content: '★';
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+/* Card Back (Result) */
+.card-back {
+  background: #fff;
+  color: #333;
+  transform: rotateY(180deg);
+  padding: 10px;
+  border: 4px solid #fff;
+}
+
+.card-text {
+  font-weight: bold;
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.card-hint {
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  animation: fade-in 0.5s;
+}
+
+/* Shuffle Animation */
+@keyframes shuffleMove {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+
+  50% {
+    transform: translate(var(--center-x), var(--center-y)) rotate(calc(var(--i) * 5deg));
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+.card-grid.shuffling .card-wrapper {
+  animation: cardShuffle 1s ease-in-out infinite;
+}
+
+@keyframes cardShuffle {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(5px, 0);
+  }
+
+  75% {
+    transform: translate(-5px, 0);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Omikuji Mode 淺草寺抽籤
+   ═══════════════════════════════════════════ */
+
+.omikuji-container {
+  width: 100%;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.omikuji-cylinder {
+  position: relative;
+  width: 200px;
+  height: 300px;
+  cursor: pointer;
+  transition: transform 0.3s;
+  user-select: none;
+}
+
+.omikuji-cylinder:hover:not(.shaking) {
+  transform: scale(1.05);
+}
+
+.omikuji-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+}
+
+.omikuji-cylinder.shaking {
+  animation: omikujiShake 0.5s ease-in-out infinite;
+  cursor: default;
+}
+
+@keyframes omikujiShake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-10px, -10px) rotate(-5deg);
+  }
+
+  50% {
+    transform: translate(0, 5px) rotate(0deg);
+  }
+
+  75% {
+    transform: translate(10px, -15px) rotate(5deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.omikuji-stick-container {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 0;
+  overflow: visible;
+  z-index: 10;
+}
+
+/* 讓籤從筒口掉出 */
+.omikuji-stick {
+  width: 20px;
+  height: 180px;
+  background: #deb887;
+  border: 1px solid #8b4513;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font-size: 14px;
+  font-weight: bold;
+  color: #5d4037;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  transform-origin: bottom center;
+  animation: stickFall 1s ease-out forwards;
+}
+
+@keyframes stickFall {
+  0% {
+    transform: translateY(0) rotate(-10deg) scale(0.6);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-150px) rotate(15deg) scale(1.2);
+  }
+}
+
+.omikuji-hint {
+  margin-top: 30px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  animation: pulse 2s infinite;
+}
+
+/* ═══════════════════════════════════════════
+   Phase 3: Transitions & Animations
+   ═══════════════════════════════════════════ */
+
+.main-content-wrapper {
+  width: 100%;
+  animation: mainFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes mainFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

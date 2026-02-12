@@ -1,32 +1,22 @@
 import { useRef, useEffect, useCallback, useState, type MutableRefObject } from 'react';
-import { generateColors } from '../utils/colors';
-import { useWheelAnimation, getSliceAtPointer } from '../hooks/useWheelAnimation';
-import { audio } from '../utils/audio';
+import { generateColors } from '../../utils/colors';
+import { useWheelAnimation, getSliceAtPointer } from '../../hooks/useWheelAnimation';
+import { audio } from '../../utils/audio';
 
 /**
- * Canvas 大轉盤元件
- *
- * 使用 Canvas 繪製等角度分割的圓盤，
- * 固定指針在 12 點鐘方向，中央「開始抽獎」按鈕。
- * 文字沿圓弧中心旋轉繪製。
- * 外環含刻度標記增加精密感。
+ * 抽獎模式介面定義
  */
-
-interface WheelProps {
-    /** 抽獎項目列表 */
+export interface DrawModeProps {
     items: string[];
-    /** 抽獎結果回呼 */
     onResult: (item: string, index: number) => void;
-    /** 旋轉狀態變化回呼 */
     onSpinningChange: (spinning: boolean) => void;
-    /** 暴露 spin 函數給外部（用於「再抽一次」） */
     spinFnRef?: MutableRefObject<(() => void) | null>;
 }
 
 /** Canvas 解析度倍率（for Retina） */
 const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 3) : 2;
 
-export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange, spinFnRef }) => {
+export const WheelMode: React.FC<DrawModeProps> = ({ items, onResult, onSpinningChange, spinFnRef }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const pointerRef = useRef<HTMLDivElement>(null);
