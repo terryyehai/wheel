@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState, type MutableRefObject } from 'react';
 import { generateColors } from '../utils/colors';
-import { useWheelAnimation } from '../hooks/useWheelAnimation';
+import { useWheelAnimation, getSliceAtPointer } from '../hooks/useWheelAnimation';
 
 /**
  * Canvas 大轉盤元件
@@ -200,10 +200,11 @@ export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange,
             currentAngleRef.current = angle;
             drawWheel(angle);
         },
-        onComplete: (resultIndex, finalAngle) => {
-            // 強制以精確角度重繪，確保停輪位置與結果完全一致
+        onComplete: (finalAngle) => {
+            // 「先停再讀」：根據停輪角度反查指針指向的 slice
             currentAngleRef.current = finalAngle;
             drawWheel(finalAngle);
+            const resultIndex = getSliceAtPointer(finalAngle, items.length);
             onSpinningChange(false);
             onResult(items[resultIndex], resultIndex);
         },
