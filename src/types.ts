@@ -1,10 +1,10 @@
-export type DrawMode = 'wheel' | 'gachapon' | 'scratch' | 'omikuji' | 'card';
+export type DrawMode = 'wheel' | 'gachapon' | 'scratch' | 'omikuji' | 'card' | 'red-envelope';
 
 export interface ModeInfo {
     id: DrawMode;
     name: string;
     description: string;
-    icon: string; // Emoji or SVG path
+    icon: string; // Emoji, SVG path, or Image URL/path
     color: string;
 }
 
@@ -43,5 +43,12 @@ export const MODES: ModeInfo[] = [
         description: '直覺選擇，翻轉命運',
         icon: '🃏',
         color: '#a78bfa',
+    },
+    {
+        id: 'red-envelope',
+        name: '紅包抽抽樂',
+        description: '新春試手氣，好運龍總來',
+        icon: '🧧',
+        color: '#e60012',
     },
 ];

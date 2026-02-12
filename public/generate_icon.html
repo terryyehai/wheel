@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            gap: 20px;
+        }
+
+        canvas {
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="icon192" width="192" height="192"></canvas>
+    <canvas id="icon512" width="512" height="512"></canvas>
+    <script>
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            // Gradient Background
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            grad.addColorStop(0, '#6c5ce7');
+            grad.addColorStop(1, '#fd79a8');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+
+            // Symbol (Four-leaf clover style)
+            ctx.translate(size / 2, size / 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.rotate(Math.PI / 2);
+                ctx.moveTo(0, 0);
+                // Heart shape petal
+                ctx.bezierCurveTo(-size * 0.2, -size * 0.3, -size * 0.3, -size * 0.3, 0, -size * 0.35);
+                ctx.bezierCurveTo(size * 0.3, -size * 0.3, size * 0.2, -size * 0.3, 0, 0);
+                ctx.fill();
+            }
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.05, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+        }
+
+        drawIcon('icon192', 192);
+        drawIcon('icon512', 512);
+    </script>
+</body>
+
+</html>

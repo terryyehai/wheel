@@ -19,10 +19,13 @@ const MIN_ITEMS = 2;
 
 const DEFAULT_TEXT = '選項 A, 選項 B, 選項 C, 選項 D';
 
+import { useTranslation } from '../i18n/LanguageContext';
+
 export const InputPanel: React.FC<InputPanelProps> = ({
     onItemsChange,
     isSpinning,
 }) => {
+    const { t } = useTranslation();
     const [text, setText] = useState(DEFAULT_TEXT);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -40,15 +43,15 @@ export const InputPanel: React.FC<InputPanelProps> = ({
         []
     );
 
+    const itemCount = parseItems(text).length;
+    const isValid = itemCount >= MIN_ITEMS;
+    const isOverLimit = itemCount > MAX_ITEMS;
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newText = e.target.value;
         setText(newText);
         onItemsChange(parseItems(newText));
     };
-
-    const itemCount = parseItems(text).length;
-    const isValid = itemCount >= MIN_ITEMS;
-    const isOverLimit = itemCount > MAX_ITEMS;
 
     // 初始化時觸發一次
     useEffect(() => {
@@ -61,38 +64,80 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             <button
                 className="panel-toggle"
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                aria-label={isCollapsed ? '展開設定' : '收起設定'}
+                aria-label={isCollapsed ? t('input.toggle_collapsed') : t('input.toggle_expanded')}
             >
                 <span className="toggle-icon">{isCollapsed ? '▼' : '▲'}</span>
                 <span className="toggle-label">
-                    {isCollapsed ? `抽獎項目 (${itemCount})` : '收起'}
+                    {isCollapsed ? `${t('input.title')} (${itemCount})` : t('input.toggle_expanded')}
                 </span>
             </button>
 
             {!isCollapsed && !isSpinning && (
                 <div className="panel-content">
                     <label className="input-label" htmlFor="items-input">
-                        每行一個抽獎項目
+                        {t('input.label')}
                     </label>
                     <textarea
                         id="items-input"
                         className="items-textarea"
                         value={text}
                         onChange={handleChange}
-                        placeholder={'請輸入抽獎項目\n用逗號或換行分隔\n例：A, B, C, D'}
+                        placeholder={t('input.placeholder')}
                         rows={6}
                         spellCheck={false}
                     />
                     <div className="input-status">
                         {!isValid && (
-                            <span className="status-warning">⚠ 至少需要 2 個項目</span>
+                            <span className="status-warning">⚠ {t('input.at_least')}</span>
                         )}
                         {isOverLimit && (
-                            <span className="status-warning">⚠ 僅取前 {MAX_ITEMS} 個項目</span>
+                            <span className="status-warning">⚠ {t('input.max_limit')}</span>
                         )}
                         {isValid && !isOverLimit && (
-                            <span className="status-ok">✓ {itemCount} 個項目</span>
+                            <span className="status-ok">✓ {itemCount} {t('input.items_count')}</span>
                         )}
+                    </div>
+
+                    <div className="panel-actions" style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = '.csv,.txt';
+                                input.onchange = (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (rev) => {
+                                            const content = rev.target?.result as string;
+                                            setText(content);
+                                            onItemsChange(parseItems(content));
+                                        };
+                                        reader.readAsText(file);
+                                    }
+                                };
+                                input.click();
+                            }}
+                            style={{ flex: 1, padding: '8px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid var(--glass-border)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+                        >
+                            📥 {t('input.import')}
+                        </button>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => {
+                                const blob = new Blob([text], { type: 'text/csv' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = '抽獎清單.csv';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                            style={{ flex: 1, padding: '8px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid var(--glass-border)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+                        >
+                            📤 {t('input.export')}
+                        </button>
                     </div>
                 </div>
             )}

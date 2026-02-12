@@ -7,8 +7,20 @@ import { ScratchMode } from './components/modes/ScratchMode';
 import { GachaponMode } from './components/modes/GachaponMode';
 import { CardMode } from './components/modes/CardMode';
 import { OmikujiMode } from './components/modes/OmikujiMode';
+import { RedEnvelopeMode } from './components/modes/RedEnvelopeMode';
+import { HistoryPanel } from './components/HistoryPanel';
 import { type DrawMode, MODES } from './types';
 import { audio } from './utils/audio';
+
+interface HistoryItem {
+  id: string;
+  item: string;
+  mode: string;
+  timestamp: number;
+}
+
+import { useTranslation } from './i18n/LanguageContext';
+import { type Language } from './i18n/translations';
 
 /**
  * 抽抽樂大轉盤 — 主應用程式
@@ -17,24 +29,45 @@ import { audio } from './utils/audio';
  * 支援多模組切換架構。
  */
 const App: React.FC = () => {
+  const { t, language, setLanguage } = useTranslation();
   const [items, setItems] = useState<string[]>(['選項 A', '選項 B', '選項 C', '選項 D']);
   const [currentMode, setCurrentMode] = useState<DrawMode | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [primaryColor, setPrimaryColor] = useState('#6c7bff');
 
-  // 初始化音效設定
+  // 初始化音效與歷史紀錄
   useState(() => {
-    const saved = localStorage.getItem('wheel-mute');
-    if (saved === 'true') {
+    const savedMute = localStorage.getItem('wheel-mute');
+    if (savedMute === 'true') {
       audio.setMuted(true);
       setIsMuted(true);
     }
+    const savedHistory = localStorage.getItem('wheel-history');
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Failed to parse history', e);
+      }
+    }
+    const savedColor = localStorage.getItem('wheel-color');
+    if (savedColor) setPrimaryColor(savedColor);
   });
 
   // 切換背景主題
   useEffect(() => {
     document.body.setAttribute('data-theme', currentMode || 'home');
+
+    // 特別為「紅包」模式或無模式時啟用 CNY 主題 (作為備選方案)
+    if (currentMode === 'red-envelope' || !currentMode) {
+      document.body.classList.add('cny-theme');
+    } else {
+      document.body.classList.remove('cny-theme');
+    }
   }, [currentMode]);
 
   const toggleSound = () => {
@@ -52,7 +85,30 @@ const App: React.FC = () => {
 
   const handleResult = useCallback((item: string, _index: number) => {
     setResult(item);
+    if (currentMode) {
+      const newItem: HistoryItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        item,
+        mode: currentMode,
+        timestamp: Date.now(),
+      };
+      setHistory(prev => {
+        const next = [newItem, ...prev].slice(0, 10);
+        localStorage.setItem('wheel-history', JSON.stringify(next));
+        return next;
+      });
+    }
+  }, [currentMode]);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    localStorage.removeItem('wheel-history');
   }, []);
+
+  const changeColor = (color: string) => {
+    setPrimaryColor(color);
+    localStorage.setItem('wheel-color', color);
+  };
 
   const handleSpinningChange = useCallback((spinning: boolean) => {
     setIsSpinning(spinning);
@@ -85,12 +141,52 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <header className="app-header" style={{ position: 'relative' }}>
+        {/* Language Switcher */}
+        <div className="language-selector" style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '5px', zIndex: 10 }}>
+          {(['zh-TW', 'en', 'ja'] as Language[]).map(lang => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              style={{
+                background: language === lang ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#fff',
+                fontSize: '0.7rem',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                opacity: language === lang ? 1 : 0.6,
+                fontWeight: language === lang ? 'bold' : 'normal'
+              }}
+            >
+              {lang === 'zh-TW' ? '繁' : lang.toUpperCase()}
+            </button>
+          ))}
+          {/* Color Presets */}
+          <div style={{ marginLeft: '10px', display: 'flex', gap: '4px' }}>
+            {['#6c7bff', '#ff6b6b', '#4ade80', '#fbbf24', '#f472b6'].map(clr => (
+              <div
+                key={clr}
+                onClick={() => changeColor(clr)}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: clr,
+                  cursor: 'pointer',
+                  border: primaryColor === clr ? '1px solid #fff' : 'none'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {currentMode && (
             <button
               className="back-btn"
               onClick={handleBackToHome}
-              aria-label="返回首頁"
+              aria-label={t('app.back')}
               disabled={isSpinning}
             >
               ←
@@ -98,10 +194,10 @@ const App: React.FC = () => {
           )}
           <div>
             <h1 className="app-title">
-              {currentModeInfo ? currentModeInfo.name : '抽抽樂大轉盤'}
+              {currentModeInfo ? t(`modes.${currentMode}.name`) : t('app.title')}
             </h1>
             <p className="app-subtitle">
-              {currentModeInfo ? currentModeInfo.description : '選擇一種玩法，轉動你的命運'}
+              {currentModeInfo ? t(`modes.${currentMode}.description`) : t('app.subtitle')}
             </p>
           </div>
         </div>
@@ -121,7 +217,7 @@ const App: React.FC = () => {
             transition: 'opacity 0.2s',
             padding: '8px'
           }}
-          title={isMuted ? "開啟音效" : "靜音"}
+          title={isMuted ? t('app.sound_on') : t('app.sound_off')}
         >
           {isMuted ? '🔇' : '🔊'}
         </button>
@@ -180,6 +276,15 @@ const App: React.FC = () => {
               />
             )}
 
+            {currentMode === 'red-envelope' && (
+              <RedEnvelopeMode
+                items={items}
+                onResult={handleResult}
+                onSpinningChange={handleSpinningChange}
+                spinFnRef={spinFnRef}
+              />
+            )}
+
             <InputPanel
               onItemsChange={handleItemsChange}
               isSpinning={isSpinning}
@@ -195,6 +300,23 @@ const App: React.FC = () => {
           onSpinAgain={handleSpinAgain}
         />
       )}
+
+      <HistoryPanel
+        history={history}
+        onClear={clearHistory}
+        isOpen={isHistoryOpen}
+        onToggle={() => setIsHistoryOpen(!isHistoryOpen)}
+      />
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        :root {
+          --accent: ${primaryColor};
+          --accent-glow: ${primaryColor}40;
+          --accent-ring: ${primaryColor}80;
+          --shadow-glow: 0 0 40px ${primaryColor}20;
+        }
+      `}} />
     </div>
   );
 };

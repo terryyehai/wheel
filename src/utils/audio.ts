@@ -319,6 +319,40 @@ class AudioEngine {
         osc.start(t);
         osc.stop(t + 0.1);
     }
+    /** 播放金幣聲 (Coin) */
+    public coin() {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        // High pitch sine wave for "ting"
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, t);
+        osc.frequency.exponentialRampToValueAtTime(800, t + 0.3);
+
+        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.3);
+
+        // Second layer for richness
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1800, t);
+        osc2.frequency.exponentialRampToValueAtTime(1200, t + 0.1);
+        gain2.gain.setValueAtTime(0.05, t);
+        gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(t);
+        osc2.stop(t + 0.1);
+    }
 }
 
 export const audio = new AudioEngine();
