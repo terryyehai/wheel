@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { InputPanel } from './components/InputPanel';
 import { ResultOverlay } from './components/ResultOverlay';
 import { ModeSelector } from './components/ModeSelector';
@@ -31,6 +31,11 @@ const App: React.FC = () => {
       setIsMuted(true);
     }
   });
+
+  // 切換背景主題
+  useEffect(() => {
+    document.body.setAttribute('data-theme', currentMode || 'home');
+  }, [currentMode]);
 
   const toggleSound = () => {
     const newState = audio.toggleMute();
