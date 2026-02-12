@@ -1,11 +1,13 @@
 import { useEffect, useCallback } from 'react';
+import { ConfettiCanvas } from './ConfettiCanvas';
+import { audio } from '../utils/audio';
 
 /**
  * 結果彈出層
  *
  * 全螢幕半透明遮罩 + 背景模糊，中央卡片彈出動畫。
  * 符合 ARIA dialog 規範：role="dialog" + aria-modal + ESC 關閉。
- * 包含 confetti 粒子效果與「再抽一次」按鈕。
+ * 包含 canvas confetti 粒子效果與「再抽一次」按鈕。
  */
 
 interface ResultOverlayProps {
@@ -39,9 +41,6 @@ const SparkleIcon = () => (
     </svg>
 );
 
-/** Confetti 粒子陣列 */
-const CONFETTI_COUNT = 8;
-
 export const ResultOverlay: React.FC<ResultOverlayProps> = ({
     result,
     onClose,
@@ -57,10 +56,13 @@ export const ResultOverlay: React.FC<ResultOverlayProps> = ({
         [onClose]
     );
 
-    // 掛載時鎖定 body 滾動 & 監聽鍵盤
+    // 掛載時鎖定 body 滾動 & 監聽鍵盤 & 播放勝利音效
     useEffect(() => {
         document.body.classList.add('overlay-open');
         document.addEventListener('keydown', handleKeyDown);
+
+        // 播放勝利音效
+        audio.win();
 
         return () => {
             document.body.classList.remove('overlay-open');
@@ -69,6 +71,8 @@ export const ResultOverlay: React.FC<ResultOverlayProps> = ({
     }, [handleKeyDown]);
 
     const handleSpinAgain = () => {
+        // 點擊音效
+        audio.click();
         onClose();
         onSpinAgain?.();
     };
@@ -81,15 +85,11 @@ export const ResultOverlay: React.FC<ResultOverlayProps> = ({
             aria-modal="true"
             aria-label="抽獎結果"
         >
-            <div className="result-card" onClick={(e) => e.stopPropagation()}>
-                {/* Confetti 粒子效果 */}
-                <div className="confetti-container" aria-hidden="true">
-                    {Array.from({ length: CONFETTI_COUNT }, (_, i) => (
-                        <div key={i} className="confetti-particle" />
-                    ))}
-                </div>
+            {/* Canvas Confetti 粒子效果 (全螢幕層) */}
+            <ConfettiCanvas />
 
-                {/* Sparkle SVG 圖示（取代 emoji） */}
+            <div className="result-card" onClick={(e) => e.stopPropagation()}>
+                {/* 裝飾背景光暈 */}
                 <div className="result-sparkle" aria-hidden="true">
                     <SparkleIcon />
                 </div>

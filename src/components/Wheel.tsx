@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState, type MutableRefObject } from 'react';
 import { generateColors } from '../utils/colors';
 import { useWheelAnimation, getSliceAtPointer } from '../hooks/useWheelAnimation';
+import { audio } from '../utils/audio';
 
 /**
  * Canvas 大轉盤元件
@@ -28,8 +29,10 @@ const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 
 export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange, spinFnRef }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const pointerRef = useRef<HTMLDivElement>(null);
     const [canvasSize, setCanvasSize] = useState(320);
     const currentAngleRef = useRef(0);
+    const lastSliceIndexRef = useRef(-1);
 
     // ── Canvas 尺寸自適應 ──
     useEffect(() => {
@@ -199,6 +202,20 @@ export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange,
         onAngleUpdate: (angle) => {
             currentAngleRef.current = angle;
             drawWheel(angle);
+
+            // ── 聲光效果：偵測指針跨區 ──
+            const currentSlice = getSliceAtPointer(angle, items.length);
+            if (currentSlice !== lastSliceIndexRef.current && lastSliceIndexRef.current !== -1) {
+                // 播放音效
+                audio.tick();
+                // 觸發指針動畫（移除 class 再加回以重播動畫）
+                if (pointerRef.current) {
+                    pointerRef.current.classList.remove('pointer-ticking');
+                    void pointerRef.current.offsetWidth; // Force reflow
+                    pointerRef.current.classList.add('pointer-ticking');
+                }
+            }
+            lastSliceIndexRef.current = currentSlice;
         },
         onComplete: (finalAngle) => {
             // 「先停再讀」：根據停輪角度反查指針指向的 slice
@@ -207,11 +224,19 @@ export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange,
             const resultIndex = getSliceAtPointer(finalAngle, items.length);
             onSpinningChange(false);
             onResult(items[resultIndex], resultIndex);
+
+            // 轉完重置 slice index，避免下次開始時瞬間觸發音效
+            lastSliceIndexRef.current = -1;
         },
     });
 
     const handleSpin = () => {
         if (isSpinning || items.length < 2) return;
+
+        // 使用者互動時初始化 AudioContext
+        audio.init();
+        audio.click();
+
         onSpinningChange(true);
         startSpin();
     };
@@ -224,9 +249,12 @@ export const Wheel: React.FC<WheelProps> = ({ items, onResult, onSpinningChange,
     });
 
     return (
-        <div className="wheel-container" ref={containerRef}>
+        <div
+            className={`wheel-container ${isSpinning ? 'wheel-glow' : ''}`}
+            ref={containerRef}
+        >
             {/* 固定指針 — 12 點鐘方向 */}
-            <div className="wheel-pointer" aria-hidden="true">
+            <div className="wheel-pointer" ref={pointerRef} aria-hidden="true">
                 <svg width="28" height="36" viewBox="0 0 28 36">
                     <path
                         d="M14 36L2 8C0.5 4.5 3 0 7 0H21C25 0 27.5 4.5 26 8L14 36Z"

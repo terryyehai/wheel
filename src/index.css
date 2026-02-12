@@ -724,3 +724,39 @@ select {
   background: var(--text-muted);
   border-radius: 2px;
 }
+
+/* 轉盤加速光暈 */
+@keyframes spin-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), 0 0 50px rgba(255, 69, 0, 0.2);
+  }
+}
+
+.wheel-glow {
+  animation: spin-glow 0.5s infinite alternate;
+}
+
+/* 指針撞擊動畫 (由 JS 觸發 class) */
+@keyframes pointer-tick {
+  0% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  30% {
+    transform: translateX(-50%) rotate(-25deg);
+  }
+
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+}
+
+.pointer-ticking {
+  animation: pointer-tick 0.15s ease-out;
+}
