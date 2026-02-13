@@ -1,7 +1,7 @@
 {
-    "name": "抽抽樂大轉盤",
-    "short_name": "LuckyWheel",
-    "description": "全能抽獎平台：轉盤、刮刮樂、扭蛋、抽籤、抽卡",
+    "name": "福緣試煉場",
+    "short_name": "FortuneTrial",
+    "description": "全能幸運試煉：轉盤、刮刮樂、扭蛋、抽籤、抽卡",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#0f1119",

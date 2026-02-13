@@ -3,7 +3,7 @@ export type Language = 'zh-TW' | 'en' | 'ja';
 export const translations = {
     'zh-TW': {
         app: {
-            title: '抽抽樂大轉盤',
+            title: '福緣試煉場',
             subtitle: '選擇一種玩法，轉動你的命運',
             back: '返回首頁',
             sound_on: '開啟音效',
@@ -73,7 +73,7 @@ export const translations = {
     },
     'en': {
         app: {
-            title: 'Lucky Draw Master',
+            title: 'Fortune Trial Ground',
             subtitle: 'Choose a game and spin your fate',
             back: 'Back to Home',
             sound_on: 'Sound On',
@@ -143,7 +143,7 @@ export const translations = {
     },
     'ja': {
         app: {
-            title: 'ラッキードロー',
+            title: '福縁試練場',
             subtitle: 'モードを選んで、運命を回そう',
             back: 'ホームに戻る',
             sound_on: '音声をオン',
