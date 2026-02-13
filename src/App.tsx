@@ -140,48 +140,47 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <header className="app-header" style={{ position: 'relative' }}>
-        {/* Language Switcher */}
-        <div className="language-selector" style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '5px', zIndex: 10 }}>
-          {(['zh-TW', 'en', 'ja'] as Language[]).map(lang => (
+      <header className="app-header">
+        <div className="header-controls">
+          {/* Left: Language & Color */}
+          <div className="controls-group left">
+            <div className="language-selector">
+              {(['zh-TW', 'en', 'ja'] as Language[]).map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className={`lang-btn ${language === lang ? 'active' : ''}`}
+                >
+                  {lang === 'zh-TW' ? '繁' : lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            {/* Color Presets */}
+            <div className="color-presets">
+              {['#6c7bff', '#ff6b6b', '#4ade80', '#fbbf24', '#f472b6'].map(clr => (
+                <div
+                  key={clr}
+                  onClick={() => changeColor(clr)}
+                  className={`color-dot ${primaryColor === clr ? 'active' : ''}`}
+                  style={{ background: clr }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Sound Toggle */}
+          <div className="controls-group right">
             <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              style={{
-                background: language === lang ? 'rgba(255,255,255,0.2)' : 'transparent',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#fff',
-                fontSize: '0.7rem',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                opacity: language === lang ? 1 : 0.6,
-                fontWeight: language === lang ? 'bold' : 'normal'
-              }}
+              onClick={toggleSound}
+              className="sound-btn"
+              title={isMuted ? t('app.sound_on') : t('app.sound_off')}
             >
-              {lang === 'zh-TW' ? '繁' : lang.toUpperCase()}
+              {isMuted ? '🔇' : '🔊'}
             </button>
-          ))}
-          {/* Color Presets */}
-          <div style={{ marginLeft: '10px', display: 'flex', gap: '4px' }}>
-            {['#6c7bff', '#ff6b6b', '#4ade80', '#fbbf24', '#f472b6'].map(clr => (
-              <div
-                key={clr}
-                onClick={() => changeColor(clr)}
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: clr,
-                  cursor: 'pointer',
-                  border: primaryColor === clr ? '1px solid #fff' : 'none'
-                }}
-              />
-            ))}
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="header-title-wrapper">
           {currentMode && (
             <button
               className="back-btn"
@@ -192,7 +191,7 @@ const App: React.FC = () => {
               ←
             </button>
           )}
-          <div>
+          <div className="title-container">
             <h1 className="app-title">
               {currentModeInfo ? t(`modes.${currentMode}.name`) : t('app.title')}
             </h1>
@@ -201,26 +200,6 @@ const App: React.FC = () => {
             </p>
           </div>
         </div>
-
-        <button
-          onClick={toggleSound}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            right: '0',
-            transform: 'translateY(-50%)',
-            background: 'transparent',
-            border: 'none',
-            fontSize: '1.2rem',
-            cursor: 'pointer',
-            opacity: 0.7,
-            transition: 'opacity 0.2s',
-            padding: '8px'
-          }}
-          title={isMuted ? t('app.sound_on') : t('app.sound_off')}
-        >
-          {isMuted ? '🔇' : '🔊'}
-        </button>
       </header>
 
       <main className="app-main">

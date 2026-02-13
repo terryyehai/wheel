@@ -6,4 +6,10 @@ export default defineConfig({
   plugins: [react()],
   // GitHub Pages 部署路徑 = repo 名稱
   base: '/wheel/',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 1500,
+  }
 })
