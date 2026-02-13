@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { InputPanel } from './components/InputPanel';
 import { ResultOverlay } from './components/ResultOverlay';
 import { ModeSelector } from './components/ModeSelector';
@@ -22,22 +23,23 @@ interface HistoryItem {
 import { useTranslation } from './i18n/LanguageContext';
 import { type Language } from './i18n/translations';
 
-/**
- * 抽抽樂大轉盤 — 主應用程式
- *
- * 管理核心狀態：items、currentMode、isSpinning、resultIndex。
- * 支援多模組切換架構。
- */
 const App: React.FC = () => {
   const { t, language, setLanguage } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [items, setItems] = useState<string[]>(['選項 A', '選項 B', '選項 C', '選項 D']);
-  const [currentMode, setCurrentMode] = useState<DrawMode | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [primaryColor, setPrimaryColor] = useState('#6c7bff');
+
+  // Derive current mode from URL path (e.g. /wheel -> 'wheel')
+  // Path is usually like "/" or "/wheel". Remove leading slash.
+  const pathMode = location.pathname.slice(1);
+  const currentMode = MODES.find(m => m.id === pathMode)?.id as DrawMode || null;
 
   // 初始化音效與歷史紀錄
   useState(() => {
@@ -62,13 +64,12 @@ const App: React.FC = () => {
   useEffect(() => {
     document.body.setAttribute('data-theme', currentMode || 'home');
 
-    // 特別為「紅包」模式或無模式時啟用 CNY 主題 (作為備選方案)
-    if (currentMode === 'red-envelope' || !currentMode) {
+    if (currentMode === 'red-envelope' || (!currentMode && location.pathname === '/')) {
       document.body.classList.add('cny-theme');
     } else {
       document.body.classList.remove('cny-theme');
     }
-  }, [currentMode]);
+  }, [currentMode, location.pathname]);
 
   const toggleSound = () => {
     const newState = audio.toggleMute();
@@ -76,7 +77,6 @@ const App: React.FC = () => {
     localStorage.setItem('wheel-mute', String(newState));
   };
 
-  // 保存各模式的 spin 函數以便「再抽一次」時調用
   const spinFnRef = useRef<(() => void) | null>(null);
 
   const handleItemsChange = useCallback((newItems: string[]) => {
@@ -118,23 +118,21 @@ const App: React.FC = () => {
     setResult(null);
   }, []);
 
-  /** 「再抽一次」：關閉結果後立即觸發新一輪 */
   const handleSpinAgain = useCallback(() => {
     setResult(null);
-    // 使用 setTimeout 確保 overlay 完全卸載後再抽
     setTimeout(() => {
       spinFnRef.current?.();
     }, 50);
   }, []);
 
   const handleModeSelect = useCallback((mode: DrawMode) => {
-    setCurrentMode(mode);
-  }, []);
+    navigate('/' + mode);
+  }, [navigate]);
 
   const handleBackToHome = useCallback(() => {
     if (isSpinning) return;
-    setCurrentMode(null);
-  }, [isSpinning]);
+    navigate('/');
+  }, [isSpinning, navigate]);
 
   const currentModeInfo = currentMode ? MODES.find((m) => m.id === currentMode) : null;
 
@@ -142,7 +140,6 @@ const App: React.FC = () => {
     <div className="app">
       <header className="app-header">
         <div className="header-controls">
-          {/* Left: Language & Color */}
           <div className="controls-group left">
             <div className="language-selector">
               {(['zh-TW', 'en', 'ja'] as Language[]).map(lang => (
@@ -155,7 +152,6 @@ const App: React.FC = () => {
                 </button>
               ))}
             </div>
-            {/* Color Presets */}
             <div className="color-presets">
               {['#6c7bff', '#ff6b6b', '#4ade80', '#fbbf24', '#f472b6'].map(clr => (
                 <div
@@ -168,7 +164,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Sound Toggle */}
           <div className="controls-group right">
             <button
               onClick={toggleSound}
@@ -203,73 +198,48 @@ const App: React.FC = () => {
       </header>
 
       <main className="app-main">
-        {!currentMode ? (
-          <div key="selector" className="main-content-wrapper">
-            <ModeSelector onSelect={handleModeSelect} />
-          </div>
-        ) : (
-          <div key={currentMode} className="main-content-wrapper">
-            {/* 根據模式渲染對應組件 */}
-            {currentMode === 'wheel' && (
-              <WheelMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+        <div className="main-content-wrapper">
+          <Routes>
+            <Route path="/" element={<ModeSelector onSelect={handleModeSelect} />} />
 
-            {currentMode === 'scratch' && (
-              <ScratchMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+            <Route path="/wheel" element={
+              <WheelMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
 
-            {currentMode === 'gachapon' && (
-              <GachaponMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+            <Route path="/scratch" element={
+              <ScratchMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
 
-            {currentMode === 'card' && (
-              <CardMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+            <Route path="/gachapon" element={
+              <GachaponMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
 
-            {currentMode === 'omikuji' && (
-              <OmikujiMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+            <Route path="/card" element={
+              <CardMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
 
-            {currentMode === 'red-envelope' && (
-              <RedEnvelopeMode
-                items={items}
-                onResult={handleResult}
-                onSpinningChange={handleSpinningChange}
-                spinFnRef={spinFnRef}
-              />
-            )}
+            <Route path="/omikuji" element={
+              <OmikujiMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
 
+            <Route path="/red-envelope" element={
+              <RedEnvelopeMode items={items} onResult={handleResult} onSpinningChange={handleSpinningChange} spinFnRef={spinFnRef} />
+            } />
+
+            <Route path="*" element={<ModeSelector onSelect={handleModeSelect} />} />
+          </Routes>
+
+          {/* InputPanel 只有在非首頁時才顯示，或者特定模式下顯示? 
+                原邏輯：!currentMode ? ModeSelector : (ModeComponent + InputPanel)
+                所以只有當有 currentMode 時才渲染 InputPanel。
+            */}
+          {currentMode && (
             <InputPanel
               onItemsChange={handleItemsChange}
               isSpinning={isSpinning}
             />
-          </div>
-        )}
+          )}
+        </div>
       </main>
 
       {result !== null && (
